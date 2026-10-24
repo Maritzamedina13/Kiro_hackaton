@@ -1,0 +1,52 @@
+name: Deploy backend (AWS SAM)
+
+# Despliega la API (API Gateway + Lambda + DynamoDB) a AWS con SAM.
+# Requiere estos GitHub Secrets (se agregan en Settings > Secrets and variables > Actions):
+#   AWS_ACCESS_KEY_ID
+#   AWS_SECRET_ACCESS_KEY
+# Y estas variables (vars):
+#   AWS_REGION       (ej. us-east-1)
+#   CORS_ORIGINS     (ej. https://<usuario>.github.io)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar AWS SAM CLI
+        run: pip install aws-sam-cli
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: SAM build
+        run: sam build
+
+      - name: SAM deploy
+        run: |
+          sam deploy \
+            --stack-name biomed-tickets \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides CorsOrigins="${{ vars.CORS_ORIGINS }}"

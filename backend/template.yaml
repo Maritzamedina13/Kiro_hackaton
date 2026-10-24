@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sistema de tickets biomédicos — API serverless (API Gateway + Lambda + DynamoDB).
+  Dimensionado para la capa gratuita de AWS.
+
+Parameters:
+  CorsOrigins:
+    Type: String
+    Description: Orígenes permitidos para CORS (coma-separados). Incluye la URL de GitHub Pages.
+    Default: "http://localhost:5173"
+
+Globals:
+  Function:
+    Timeout: 15
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  # Tabla única (single-table design) con dos GSIs.
+  TicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: biomed-tickets
+      BillingMode: PAY_PER_REQUEST   # sin costo fijo; entra en capa gratuita
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: GSI2
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # Función Lambda que corre FastAPI vía Mangum.
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: biomed-tickets-api
+      CodeUri: .
+      Handler: app.main.handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TicketsTable
+          CORS_ORIGINS: !Ref CorsOrigins
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TicketsTable
+      Events:
+        ProxyApi:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        RootApi:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: URL base de la API (configúrala como VITE_API_URL en el frontend).
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  TableName:
+    Description: Nombre de la tabla DynamoDB.
+    Value: !Ref TicketsTable

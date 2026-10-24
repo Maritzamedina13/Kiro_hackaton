@@ -1,0 +1,234 @@
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --border: #d6dbe1;
+  --text: #1b2733;
+  --muted: #5a6b7b;
+  --primary: #0b6bcb;
+  --primary-dark: #084e95;
+
+  /* Prioridades (contraste suficiente; la UI además muestra la etiqueta). */
+  --critica-bg: #fdecec;
+  --critica-fg: #a11313;
+  --alta-bg: #fff2e2;
+  --alta-fg: #9a5500;
+  --media-bg: #fff8d6;
+  --media-fg: #7a6100;
+  --baja-bg: #e8f3ea;
+  --baja-fg: #22673a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+header p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 360px 1fr;
+    align-items: start;
+  }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+
+/* Formulario */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+  color: var(--text);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 3px solid rgba(11, 107, 203, 0.35);
+  border-color: var(--primary);
+}
+
+.checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--primary-dark);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feedback {
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  margin-bottom: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.feedback.error {
+  background: var(--critica-bg);
+  color: var(--critica-fg);
+}
+
+.feedback.ok {
+  background: var(--baja-bg);
+  color: var(--baja-fg);
+}
+
+/* Tablero */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ticket {
+  border: 1px solid var(--border);
+  border-left-width: 6px;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  background: #fff;
+}
+
+.ticket.prio-critica { border-left-color: var(--critica-fg); }
+.ticket.prio-alta { border-left-color: var(--alta-fg); }
+.ticket.prio-media { border-left-color: var(--media-fg); }
+.ticket.prio-baja { border-left-color: var(--baja-fg); }
+
+.ticket-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ticket h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.ticket .desc {
+  margin: 0.4rem 0;
+  color: var(--text);
+}
+
+.ticket .meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge.prio-critica { background: var(--critica-bg); color: var(--critica-fg); }
+.badge.prio-alta { background: var(--alta-bg); color: var(--alta-fg); }
+.badge.prio-media { background: var(--media-bg); color: var(--media-fg); }
+.badge.prio-baja { background: var(--baja-bg); color: var(--baja-fg); }
+
+.badge.estado {
+  background: #e7eef5;
+  color: #244;
+}
+
+.empty,
+.loading {
+  color: var(--muted);
+  padding: 1rem 0;
+}

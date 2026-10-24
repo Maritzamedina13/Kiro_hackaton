@@ -1,0 +1,19 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+
+# Python / backend
+__pycache__/
+*.pyc
+.venv/
+backend/.aws-sam/
+
+# Entorno y secretos (nunca commitear)
+.env
+*.pem
+secrets/
+
+# Editor / OS
+.DS_Store
+.vscode/
