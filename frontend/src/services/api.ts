@@ -36,6 +36,7 @@ function leerTodos(): Ticket[] {
     return data.map((t) => ({
       ...t,
       estado_equipo: t.estado_equipo ?? estadoEquipoSegun(t.estado),
+      observacion_cierre: t.observacion_cierre ?? null,
     }));
   } catch {
     return [];
@@ -89,6 +90,7 @@ export async function crearTicket(nuevo: NuevoTicket): Promise<Ticket> {
     estado_equipo: estadoEquipoSegun("abierto"),
     asignado_a: null,
     evidencia_url: nuevo.evidencia_url ?? null,
+    observacion_cierre: null,
     sla_minutos: SLA_MINUTOS[prioridad],
     created_at: now,
     updated_at: now,
@@ -101,7 +103,12 @@ export async function crearTicket(nuevo: NuevoTicket): Promise<Ticket> {
 
 export async function actualizarTicket(
   ticketId: string,
-  cambios: { estado?: EstadoTicket; asignado_a?: string; prioridad?: Prioridad; nota?: string },
+  cambios: {
+    estado?: EstadoTicket;
+    asignado_a?: string;
+    prioridad?: Prioridad;
+    observacion_cierre?: string;
+  },
 ): Promise<Ticket> {
   await delay();
   const tickets = leerTodos();
@@ -111,12 +118,25 @@ export async function actualizarTicket(
   }
   const actual = tickets[idx];
   const nuevoEstado = cambios.estado ?? actual.estado;
+
+  // Al cerrar es obligatorio dejar una observación de cierre (evidencia/verificación).
+  if (nuevoEstado === "cerrado") {
+    const observacion = (cambios.observacion_cierre ?? actual.observacion_cierre ?? "").trim();
+    if (!observacion) {
+      throw new Error("Para cerrar el ticket debes registrar una observación de cierre.");
+    }
+  }
+
   const actualizado: Ticket = {
     ...actual,
     estado: nuevoEstado,
     estado_equipo: estadoEquipoSegun(nuevoEstado),
     prioridad: cambios.prioridad ?? actual.prioridad,
     asignado_a: cambios.asignado_a !== undefined ? cambios.asignado_a : actual.asignado_a,
+    observacion_cierre:
+      cambios.observacion_cierre !== undefined
+        ? cambios.observacion_cierre.trim() || null
+        : actual.observacion_cierre,
     updated_at: ahoraIso(),
   };
   if (cambios.prioridad) {

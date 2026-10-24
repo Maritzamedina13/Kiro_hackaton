@@ -45,6 +45,7 @@ export interface Ticket {
   estado_equipo: EstadoEquipo;
   asignado_a: string | null;
   evidencia_url: string | null;
+  observacion_cierre: string | null;
   sla_minutos: number;
   created_at: string;
   updated_at: string;

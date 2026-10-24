@@ -44,6 +44,9 @@ export function Tablero({ recargarToken }: Props): ReactElement {
   const [filtroEstado, setFiltroEstado] = useState<EstadoTicket | "">("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Ticket en proceso de cierre (muestra el campo de observación) y su texto.
+  const [cerrandoId, setCerrandoId] = useState<string | null>(null);
+  const [obsCierre, setObsCierre] = useState("");
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -81,6 +84,19 @@ export function Tablero({ recargarToken }: Props): ReactElement {
       await cargar();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo actualizar el ticket.");
+    }
+  }
+
+  // Confirma el cierre con la observación obligatoria.
+  async function confirmarCierre(ticketId: string): Promise<void> {
+    setError(null);
+    try {
+      await actualizarTicket(ticketId, { estado: "cerrado", observacion_cierre: obsCierre });
+      setCerrandoId(null);
+      setObsCierre("");
+      await cargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cerrar el ticket.");
     }
   }
 
@@ -227,13 +243,69 @@ export function Tablero({ recargarToken }: Props): ReactElement {
                     <button
                       className="btn btn-sm"
                       type="button"
-                      onClick={() => void cambiar(t.ticket_id, { estado: siguiente })}
+                      onClick={() => {
+                        if (siguiente === "cerrado") {
+                          // Abre el panel de observación en vez de cerrar directo.
+                          setCerrandoId(t.ticket_id);
+                          setObsCierre("");
+                        } else {
+                          void cambiar(t.ticket_id, { estado: siguiente });
+                        }
+                      }}
                     >
                       {siguiente === "cerrado" ? <IconCheck /> : <IconFlecha />}
                       {ESTADO_LABEL[siguiente]}
                     </button>
                   )}
                 </div>
+
+                {/* Panel de cierre: observación obligatoria (evidencia/verificación) */}
+                {cerrandoId === t.ticket_id && (
+                  <div className="cierre-panel">
+                    <label htmlFor={`obs-${t.ticket_id}`}>
+                      Observación de cierre <span className="req">*</span>
+                    </label>
+                    <textarea
+                      id={`obs-${t.ticket_id}`}
+                      value={obsCierre}
+                      onChange={(e) => setObsCierre(e.target.value)}
+                      rows={3}
+                      placeholder="Describe la intervención, el repuesto usado y la verificación del equipo."
+                      autoFocus
+                    />
+                    <div className="cierre-acciones">
+                      <button
+                        className="btn btn-sm"
+                        type="button"
+                        disabled={!obsCierre.trim()}
+                        onClick={() => void confirmarCierre(t.ticket_id)}
+                      >
+                        <IconCheck />
+                        Confirmar cierre
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        type="button"
+                        onClick={() => {
+                          setCerrandoId(null);
+                          setObsCierre("");
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Observación registrada en tickets ya cerrados */}
+                {t.estado === "cerrado" && t.observacion_cierre && (
+                  <div className="cierre-registro">
+                    <IconCheck />
+                    <div>
+                      <strong>Cierre:</strong> {t.observacion_cierre}
+                    </div>
+                  </div>
+                )}
               </article>
             );
           })}
