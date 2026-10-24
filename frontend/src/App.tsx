@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { ReporteFalla } from "./components/ReporteFalla";
 import { Tablero } from "./components/Tablero";
 
 /** Raíz de la app: formulario de reporte + tablero de seguimiento. */
-export function App(): JSX.Element {
+export function App(): ReactElement {
   // Token que se incrementa al crear un ticket para refrescar el tablero.
   const [recargarToken, setRecargarToken] = useState(0);
 

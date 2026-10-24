@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { actualizarTicket, listarTickets } from "../services/api";
 import {
   AREA_LABEL,
@@ -25,7 +25,7 @@ const SIGUIENTE_ESTADO: Partial<Record<EstadoTicket, EstadoTicket>> = {
 };
 
 /** Tablero de tickets para Ingeniería Biomédica. */
-export function Tablero({ recargarToken }: Props): JSX.Element {
+export function Tablero({ recargarToken }: Props): ReactElement {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filtroEstado, setFiltroEstado] = useState<EstadoTicket | "">("");
   const [cargando, setCargando] = useState(false);

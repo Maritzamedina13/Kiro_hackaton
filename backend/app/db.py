@@ -18,7 +18,7 @@ import uuid
 from typing import Any, Optional
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 
 from app import config
 from app.models import (
@@ -84,7 +84,7 @@ def listar_equipos() -> list[dict]:
     """Lista todos los equipos del inventario (scan filtrado por entidad META)."""
     # Para el MVP usamos scan con filtro; a escala se migraría a un GSI de entidad.
     resp = _table().scan(
-        FilterExpression=Key("SK").eq("META") & Key("entity").eq("EQUIPO")
+        FilterExpression=Attr("SK").eq("META") & Attr("entity").eq("EQUIPO")
     )
     return resp.get("Items", [])
 
@@ -199,14 +199,14 @@ def listar_tickets_por_area(area: str) -> list[dict]:
     """Tickets de un área consultando el duplicado por equipo no aplica directo;
     para el MVP filtramos por área con scan sobre items canónicos."""
     resp = _table().scan(
-        FilterExpression=Key("entity").eq("TICKET") & Key("area").eq(area)
+        FilterExpression=Attr("entity").eq("TICKET") & Attr("area").eq(area)
     )
     return resp.get("Items", [])
 
 
 def listar_todos_los_tickets() -> list[dict]:
     """Lista todos los tickets canónicos (scan filtrado)."""
-    resp = _table().scan(FilterExpression=Key("entity").eq("TICKET"))
+    resp = _table().scan(FilterExpression=Attr("entity").eq("TICKET"))
     return resp.get("Items", [])
 
 
@@ -236,11 +236,20 @@ def actualizar_ticket(ticket_id: str, cambios: TicketUpdate, autor: Optional[str
 
     prioridad_enum = Prioridad(nueva_prioridad)
 
+    # Se aliasan los nombres de atributo con '#' para evitar colisiones con
+    # palabras reservadas de DynamoDB.
     expr = (
-        "SET estado = :estado, prioridad = :prioridad, asignado_a = :asignado, "
-        "updated_at = :updated, sla_minutos = :sla, "
+        "SET #estado = :estado, #prioridad = :prioridad, #asignado = :asignado, "
+        "#updated = :updated, #sla = :sla, "
         "GSI1PK = :g1pk, GSI1SK = :g1sk, GSI2PK = :g2pk"
     )
+    names = {
+        "#estado": "estado",
+        "#prioridad": "prioridad",
+        "#asignado": "asignado_a",
+        "#updated": "updated_at",
+        "#sla": "sla_minutos",
+    }
     values = {
         ":estado": nuevo_estado,
         ":prioridad": nueva_prioridad,
@@ -255,6 +264,7 @@ def actualizar_ticket(ticket_id: str, cambios: TicketUpdate, autor: Optional[str
     resp = _table().update_item(
         Key={"PK": f"TICKET#{ticket_id}", "SK": "META"},
         UpdateExpression=expr,
+        ExpressionAttributeNames=names,
         ExpressionAttributeValues=values,
         ReturnValues="ALL_NEW",
     )

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent, type ReactElement } from "react";
 import { crearTicket } from "../services/api";
 import {
   AREA_LABEL,
@@ -30,7 +30,7 @@ const ESTADO_INICIAL: NuevoTicket = {
 type Feedback = { tipo: "ok" | "error"; texto: string } | null;
 
 /** Formulario rápido de reporte de fallas para el personal clínico. */
-export function ReporteFalla({ onCreado }: Props): JSX.Element {
+export function ReporteFalla({ onCreado }: Props): ReactElement {
   const [form, setForm] = useState<NuevoTicket>(ESTADO_INICIAL);
   const [enviando, setEnviando] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -39,7 +39,7 @@ export function ReporteFalla({ onCreado }: Props): JSX.Element {
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
-  async function handleSubmit(e: React.FormEvent): Promise<void> {
+  async function handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
     setFeedback(null);
     setEnviando(true);
