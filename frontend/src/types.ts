@@ -30,6 +30,9 @@ export type EstadoTicket =
   | "en_espera_repuesto"
   | "cerrado";
 
+// Estado operativo del equipo biomédico (independiente del estado del ticket).
+export type EstadoEquipo = "operativo" | "degradado" | "fuera_de_servicio";
+
 export interface Ticket {
   ticket_id: string;
   activo: string;
@@ -39,12 +42,21 @@ export interface Ticket {
   descripcion: string;
   prioridad: Prioridad;
   estado: EstadoTicket;
+  estado_equipo: EstadoEquipo;
   asignado_a: string | null;
   evidencia_url: string | null;
   sla_minutos: number;
   created_at: string;
   updated_at: string;
 }
+
+// Ingenieros / técnicos de Ingeniería Biomédica que pueden atender tickets.
+export const INGENIEROS_BIOMEDICA: readonly string[] = [
+  "Ing. Camilo Restrepo",
+  "Ing. Daniela Páez",
+  "Téc. Jorge Marín",
+  "Téc. Sara Villa",
+];
 
 export interface NuevoTicket {
   activo: string;
@@ -96,4 +108,10 @@ export const ESTADO_LABEL: Record<EstadoTicket, string> = {
   en_reparacion: "En reparación",
   en_espera_repuesto: "En espera de repuesto",
   cerrado: "Cerrado",
+};
+
+export const ESTADO_EQUIPO_LABEL: Record<EstadoEquipo, string> = {
+  operativo: "Operativo",
+  degradado: "Funcionamiento degradado",
+  fuera_de_servicio: "Fuera de servicio",
 };

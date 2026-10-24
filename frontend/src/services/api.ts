@@ -2,8 +2,24 @@
 // Mantiene la misma firma que una API para que los componentes no cambien.
 // Migrar a una API REST real solo requiere reescribir este archivo.
 
-import type { EstadoTicket, NuevoTicket, Prioridad, Ticket } from "../types";
+import type { EstadoEquipo, EstadoTicket, NuevoTicket, Prioridad, Ticket } from "../types";
 import { resolverPrioridad, SLA_MINUTOS } from "./priorizacion";
+
+// El estado operativo del equipo se deriva del estado del ticket:
+// mientras el ticket no esté cerrado, el equipo no está plenamente operativo.
+function estadoEquipoSegun(estado: EstadoTicket): EstadoEquipo {
+  switch (estado) {
+    case "cerrado":
+      return "operativo";
+    case "en_reparacion":
+    case "asignado":
+      return "degradado";
+    case "abierto":
+    case "en_espera_repuesto":
+    default:
+      return "fuera_de_servicio";
+  }
+}
 
 const STORAGE_KEY = "biomed.tickets.v1";
 
@@ -65,6 +81,7 @@ export async function crearTicket(nuevo: NuevoTicket): Promise<Ticket> {
     descripcion: nuevo.descripcion,
     prioridad,
     estado: "abierto",
+    estado_equipo: estadoEquipoSegun("abierto"),
     asignado_a: null,
     evidencia_url: nuevo.evidencia_url ?? null,
     sla_minutos: SLA_MINUTOS[prioridad],
@@ -88,9 +105,11 @@ export async function actualizarTicket(
     throw new Error("Ticket no encontrado.");
   }
   const actual = tickets[idx];
+  const nuevoEstado = cambios.estado ?? actual.estado;
   const actualizado: Ticket = {
     ...actual,
-    estado: cambios.estado ?? actual.estado,
+    estado: nuevoEstado,
+    estado_equipo: estadoEquipoSegun(nuevoEstado),
     prioridad: cambios.prioridad ?? actual.prioridad,
     asignado_a: cambios.asignado_a !== undefined ? cambios.asignado_a : actual.asignado_a,
     updated_at: ahoraIso(),
