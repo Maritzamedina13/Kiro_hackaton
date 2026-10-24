@@ -31,7 +31,12 @@ function leerTodos(): Ticket[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw) as Ticket[];
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    // Backfill: tickets guardados antes de añadir `estado_equipo`.
+    return data.map((t) => ({
+      ...t,
+      estado_equipo: t.estado_equipo ?? estadoEquipoSegun(t.estado),
+    }));
   } catch {
     return [];
   }
