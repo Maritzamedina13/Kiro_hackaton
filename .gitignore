@@ -1,18 +1,16 @@
-# Node / frontend
+# Dependencias y build
 node_modules/
-frontend/dist/
+dist/
 frontend/node_modules/
-
-# Python / backend
-__pycache__/
-*.pyc
-.venv/
-backend/.aws-sam/
+frontend/dist/
 
 # Entorno y secretos (nunca commitear)
 .env
 *.pem
 secrets/
+
+# Logs temporales
+*.log
 
 # Editor / OS
 .DS_Store

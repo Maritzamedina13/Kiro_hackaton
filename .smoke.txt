@@ -1,2 +1,0 @@
-IMPORT_FAIL: No module named 'pydantic'
-EXIT=0
