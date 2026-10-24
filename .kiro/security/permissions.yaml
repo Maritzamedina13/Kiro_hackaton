@@ -1,0 +1,31 @@
+# Ejemplo de permisos (referencia del scope global ~/.kiro/settings/permissions.yaml).
+# En produccion, los permisos por agente (en .kiro/agents/*.json) viajan con el repo.
+# Precedencia estricta: deny > ask > allow.
+
+rules:
+  # Nunca leer secretos ni datos sensibles del sistema de tickets biomedicos.
+  - capability: fs_read
+    match: ["**/.env", "**/*.pem", "secrets/**", "**/*credential*"]
+    effect: deny
+
+  # Comandos destructivos bloqueados siempre.
+  - capability: shell
+    match: ["rm -rf *", "sudo *", "mkfs*", "dd if=*"]
+    effect: deny
+
+  # Tocar el historial de git siempre pregunta.
+  - capability: fs_write
+    match: [".git/**"]
+    effect: ask
+
+  # Despliegue permitido.
+  - capability: shell
+    match: ["git *", "npm *", "aws *"]
+    effect: allow
+
+  # Lectura del workspace permitida por defecto.
+  - capability: fs_read
+    effect: allow
+
+policies:
+  - read-only-shell

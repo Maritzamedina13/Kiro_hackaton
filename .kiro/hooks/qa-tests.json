@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "qa-tests",
+      "trigger": "PostToolUse",
+      "matcher": "fs_write|write",
+      "action": {
+        "type": "command",
+        "command": "echo '[QA] Codigo escrito. Ejecutando verificaciones del sistema de tickets biomedicos...'; if [ -f package.json ]; then npm test --silent || echo '[QA] tests frontend fallaron o no definidos'; fi; if [ -f pyproject.toml ] || [ -f requirements.txt ]; then (pytest -q || echo '[QA] tests backend fallaron o no definidos'); fi"
+      }
+    }
+  ]
+}

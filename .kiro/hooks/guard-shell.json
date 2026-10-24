@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "guard-dangerous-shell",
+      "trigger": "PreToolUse",
+      "matcher": "execute_bash",
+      "action": {
+        "type": "command",
+        "command": "read INPUT; echo \"$INPUT\" | grep -Eq 'rm -rf|sudo |mkfs|:>|dd if=|chmod -R 777' && { echo '[GUARD] Comando peligroso bloqueado en el proyecto de tickets biomedicos.' >&2; exit 2; } || exit 0"
+      }
+    }
+  ]
+}

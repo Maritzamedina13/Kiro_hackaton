@@ -1,0 +1,2 @@
+# Los specs del sistema de tickets biomedicos se crean en vivo (Acto 10).
+# Cada feature vive en .kiro/specs/<feature>/ con requirements.md, design.md y tasks.md.
