@@ -31,9 +31,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Habilita Pages desde el propio workflow (evita el error
+      # "Pages not enabled" cuando el repo aún no tiene Pages configurado).
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Instalar dependencias
-        run: npm install
+        # npm ci respeta el lock exacto; npm install como respaldo.
+        run: npm ci || npm install
 
       - name: Build
         env:
